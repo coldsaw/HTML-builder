@@ -13,7 +13,11 @@ const secretPath = path.join(__dirname, '/secret-folder');
         fs.stat(path.join(secretPath, file.name), (err, stats) => {
           const fileArr = file.name.split('.');
           if (!stats.isDirectory()) {
-            console.log(`${fileArr[0]} - ${fileArr[1]} - ${stats.size}kb`);
+            console.log(
+              `${fileArr[0]} - ${fileArr[1]} - ${(stats.size / 1024).toFixed(
+                3,
+              )}kb`,
+            );
           }
         });
       });
