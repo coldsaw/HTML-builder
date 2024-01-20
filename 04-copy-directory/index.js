@@ -6,10 +6,10 @@ function callback(err) {
   if (err) throw err;
 }
 
-const folder = path.join(__dirname, 'files');
-const folderCopy = path.join(__dirname, 'files-copy');
+const Folder = path.join(__dirname, 'files');
+const FolderCopy = path.join(__dirname, 'files-copy');
 
-(async function () {
+async function copyFolder(folder, folderCopy) {
   await mkdir(folderCopy, { recursive: true });
   const oldFiles = await readdir(folderCopy);
   for (const file of oldFiles) {
@@ -17,11 +17,22 @@ const folderCopy = path.join(__dirname, 'files-copy');
   }
   fs.readdir(folder, { withFileTypes: true }, (err, files) => {
     for (const file of files) {
-      fs.copyFile(
-        path.join(folder, file.name),
-        path.join(folderCopy, file.name),
-        callback,
-      );
+      if (file.isFile()) {
+        fs.copyFile(
+          path.join(folder, file.name),
+          path.join(folderCopy, file.name),
+          callback,
+        );
+      }
+      if (file.isDirectory()) {
+        mkdir(path.join(folderCopy, file.name));
+        copyFolder(
+          path.join(folder, file.name),
+          path.join(folderCopy, file.name),
+        );
+      }
     }
   });
-})();
+}
+
+copyFolder(Folder, FolderCopy);
