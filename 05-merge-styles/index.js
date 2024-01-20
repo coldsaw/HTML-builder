@@ -20,7 +20,7 @@ const output = fs.createWriteStream(
         const stream = fs.createReadStream(path.join(file.path, file.name), {
           encoding: 'utf-8',
         });
-        stream.on('data', (chunk) => output.write(chunk));
+        stream.on('data', (chunk) => output.write(chunk + '\n'));
       }
     }
   });
