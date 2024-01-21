@@ -35,9 +35,6 @@ const components = path.join(__dirname, 'components');
               encoding: 'utf-8',
             },
           );
-          console.log(
-            `{{${template.name.slice(0, template.name.lastIndexOf('.'))}}}`,
-          );
           data = data.replace(
             `{{${template.name.slice(0, template.name.lastIndexOf('.'))}}}`,
             templateData,
