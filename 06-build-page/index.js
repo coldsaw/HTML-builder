@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { mkdir, readFile } = require('node:fs/promises');
+const { mkdir, readFile, rm, writeFile } = require('node:fs/promises');
 
 function callback(err) {
   if (err) throw err;
@@ -11,42 +11,44 @@ fs.mkdir(projectDist, { recursive: true }, callback);
 
 const components = path.join(__dirname, 'components');
 
+async function readTemplateData(templatePath) {
+  return await readFile(templatePath, { encoding: 'utf-8' });
+}
+
 (async function replaceTemplates() {
   const templates = [];
-  fs.readdir(components, { withFileTypes: true }, (err, files) => {
-    if (err) throw err;
-    for (const file of files) {
-      if (
-        file.isFile() &&
-        file.name.slice(file.name.lastIndexOf('.') + 1) === 'html'
-      ) {
-        templates.push(file);
-      }
+  const files = await fs.promises.readdir(components, { withFileTypes: true });
+
+  for (const file of files) {
+    if (
+      file.isFile() &&
+      file.name.slice(file.name.lastIndexOf('.') + 1) === 'html'
+    ) {
+      templates.push(file);
     }
-    fs.readFile(
-      path.join(__dirname, 'template.html'),
-      { encoding: 'utf-8' },
-      (err, data) => {
-        if (err) throw err;
-        templates.forEach(async (template) => {
-          const templateData = await readFile(
-            path.join(template.path, template.name),
-            {
-              encoding: 'utf-8',
-            },
-          );
-          data = data.replace(
-            `{{${template.name.slice(0, template.name.lastIndexOf('.'))}}}`,
-            templateData,
-          );
-          fs.writeFile(path.join(projectDist, 'index.html'), data, callback);
-        });
-      },
+  }
+
+  let templateHtml = await fs.promises.readFile(
+    path.join(__dirname, 'template.html'),
+    { encoding: 'utf-8' },
+  );
+
+  for (const template of templates) {
+    const templateData = await readTemplateData(
+      path.join(components, template.name),
     );
-  });
+    const placeholder = `{{${template.name.slice(
+      0,
+      template.name.lastIndexOf('.'),
+    )}}}`;
+    templateHtml = templateHtml.replace(placeholder, templateData);
+  }
+
+  await writeFile(path.join(projectDist, 'index.html'), templateHtml);
 })();
 
 async function copyFolder(folder, folderCopy) {
+  await rm(folderCopy, { force: true, recursive: true });
   await mkdir(folderCopy, { recursive: true });
   fs.readdir(folder, { withFileTypes: true }, (err, files) => {
     for (const file of files) {

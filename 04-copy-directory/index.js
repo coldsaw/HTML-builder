@@ -1,6 +1,6 @@
 const fs = require('node:fs');
 const path = require('path');
-const { mkdir, readdir, rm } = require('node:fs/promises');
+const { mkdir, rm } = require('node:fs/promises');
 
 function callback(err) {
   if (err) throw err;
@@ -10,11 +10,8 @@ const Folder = path.join(__dirname, 'files');
 const FolderCopy = path.join(__dirname, 'files-copy');
 
 async function copyFolder(folder, folderCopy) {
+  await rm(folderCopy, { force: true, recursive: true });
   await mkdir(folderCopy, { recursive: true });
-  const oldFiles = await readdir(folderCopy);
-  for (const file of oldFiles) {
-    await rm(path.join(__dirname, 'files-copy', file));
-  }
   fs.readdir(folder, { withFileTypes: true }, (err, files) => {
     for (const file of files) {
       if (file.isFile()) {
