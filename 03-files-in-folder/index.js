@@ -11,12 +11,12 @@ const secretPath = path.join(__dirname, '/secret-folder');
       if (err) console.log(err);
       files.forEach((file) => {
         fs.stat(path.join(secretPath, file.name), (err, stats) => {
-          const fileArr = file.name.split('.');
-          if (!stats.isDirectory()) {
+          if (file.isFile()) {
+            const parsed = path.parse(path.join(file.path, file.name));
             console.log(
-              `${fileArr[0]} - ${fileArr[1]} - ${(stats.size / 1024).toFixed(
-                3,
-              )}kb`,
+              `${parsed.name} - ${parsed.ext.slice(1)} - ${(
+                stats.size / 1024
+              ).toFixed(3)}KiB`,
             );
           }
         });
